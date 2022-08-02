@@ -4,7 +4,7 @@
 func log_value(y : felt):      
 
    ## Start a hint segment that uses python print() 
-
+   %{ print("Hello world!") %}
 
    ## This exercise has no tests to check against.
 
