@@ -17,8 +17,8 @@ end
 
 struct Player:    
     member address: felt
-    member PLACEHOLDER1: felt
-    member PLACEHOLDER2: felt
+    member points: felt
+    member revealed: felt
 end
 
 struct Game:        
@@ -41,10 +41,6 @@ end
 func game_counter() -> (game_counter : felt):
 end
 
-@storage_var
-func player_list(address: felt) -> (player : Player):
-end
-
 func hash_numb{pedersen_ptr : HashBuiltin*}(numb : felt) -> (hash : felt):
 
     alloc_locals
@@ -63,25 +59,27 @@ end
 @external
 func set_up_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(player1 : felt, player2 : felt):
     let (gc) = game_counter.read()
-    let new_game_idx = gc + 1
-    game_counter.write(new_game_idx)
 
     games.write(
-        new_game_idx,
+        gc,
         Game(
-            player1=player1,
-            player2=player2,
+            player1=Player(player1, 0, 0),
+            player2=Player(player2, 0, 0),
             next_player=0,
             last_move=(0,0),
             winner=0,
         )
     )
+
+    let new_game_idx = gc + 1
+    game_counter.write(new_game_idx)
+
     return ()
 end
 
 @view 
 func check_caller{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(caller : felt, game : Game) -> (valid : felt):
-    if (caller - game.player1) * (caller - game.player2) == 0:
+    if (caller - game.player1.address) * (caller - game.player2.address) == 0:
         return (1)
     end
 
@@ -91,7 +89,8 @@ end
 @view
 func check_hit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(square_commit : felt, square_reveal : felt) -> (hit : felt):
     let (hashed) = hash_numb(square_reveal)
-    if hashed - square_commit == 0:
+    let (q, r) = unsigned_div_rem(square_reveal, 2)
+    if hashed - square_commit + r - 1 == 0:
         return (1)
     end
 
@@ -113,11 +112,33 @@ func add_squares{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     let (is_caller_valid) = check_caller(caller, game)
     assert is_caller_valid = 1
 
-
+    load_hashes(idx, game_idx, hashes_len, hashes, player, x, y)
     return ()
 end
 
 ## loops until array length
 func load_hashes{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(idx : felt, game_idx : felt, hashes_len : felt, hashes : felt*, player : felt, x: felt, y: felt):
+    if hashes_len == 0:
+        return ()
+    end
+
+    ## TODO: load hash
+    grid.write(
+        game_idx=game_idx,
+        player=player,
+        x=x,
+        y=y,
+        value=Square(
+            square_commit=[hashes],
+            square_reveal=0,
+            shot=0
+        )
+    )
+
+    if x == 4:
+        load_hashes(idx, game_idx, hashes_len - 1, hashes + 1, player, 0, y + 1)
+    else:
+        load_hashes(idx, game_idx, hashes_len - 1, hashes + 1, player, x + 1, 0)
+    end
     return ()
 end
