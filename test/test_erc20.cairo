@@ -81,8 +81,6 @@ func test_burn_haircut{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
     tempvar contract_address
     %{ ids.contract_address = context.contract_a_address %}   
 
-    let (admin_address) = Erc20.get_admin(contract_address=contract_address)
-
     ## Start admin balance
     let (start_admin_balance) = Erc20.balanceOf(contract_address=contract_address, account = MINT_ADMIN)        
 
