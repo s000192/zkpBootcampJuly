@@ -27,7 +27,6 @@ from exercises.contracts.erc20.ERC20_base import (
 
     ERC20_initializer,       
     ERC20_transfer,
-    ERC20_transferFrom,
     ERC20_burn
 )
 

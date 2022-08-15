@@ -35,59 +35,59 @@ func __setup__():
     return ()
 end
 
-@external
-func test_mint{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():   
+# @external
+# func test_mint{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():   
 
-    tempvar contract_address    
-    %{ ids.contract_address = context.contract_address %}            
+#     tempvar contract_address    
+#     %{ ids.contract_address = context.contract_address %}            
     
-    ## Call as admin    
-    %{stop_prank_callable = start_prank(ids.MINT_ADMIN, ids.contract_address)%}   
+#     ## Call as admin    
+#     %{stop_prank_callable = start_prank(ids.MINT_ADMIN, ids.contract_address)%}   
 
-    ## Transfer even amount as mint owner to TEST_ACC1
-    IERC721.mint(contract_address=contract_address, to = TEST_ACC1)  
-    IERC721.mint(contract_address=contract_address, to = MINT_ADMIN)  
-    %{ stop_prank_callable() %}           
+#     ## Transfer even amount as mint owner to TEST_ACC1
+#     IERC721.mint(contract_address=contract_address, to = TEST_ACC1)  
+#     IERC721.mint(contract_address=contract_address, to = MINT_ADMIN)  
+#     %{ stop_prank_callable() %}           
     
-    ## Call as admin    
-    %{stop_prank_callable = start_prank(ids.TEST_ACC1, ids.contract_address)%}   
+#     ## Call as admin    
+#     %{stop_prank_callable = start_prank(ids.TEST_ACC1, ids.contract_address)%}   
 
-    ## Transfer NFT from TEST_ACC1 to TEST_ACC2
-    # IERC721.transferFrom(contract_address=contract_address, from_ = TEST_ACC1, to = TEST_ACC2, tokenId = Uint256(0,0))    
-    %{ stop_prank_callable() %}           
+#     ## Transfer NFT from TEST_ACC1 to TEST_ACC2
+#     # IERC721.transferFrom(contract_address=contract_address, from_ = TEST_ACC1, to = TEST_ACC2, tokenId = Uint256(0,0))    
+#     %{ stop_prank_callable() %}           
 
-    ## Check the counter increases afte two mints
-    let (current_counter) = IERC721.getCounter(contract_address=contract_address)
-    assert current_counter.low = 2 
+#     ## Check the counter increases afte two mints
+#     let (current_counter) = IERC721.getCounter(contract_address=contract_address)
+#     assert current_counter.low = 2 
 
-    return()
-end
+#     return()
+# end
 
-@external
-func test_og_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():       
+# @external
+# func test_og_owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():       
     
-    tempvar contract_address    
-    %{ ids.contract_address = context.contract_address %}        
+#     tempvar contract_address    
+#     %{ ids.contract_address = context.contract_address %}        
     
-    ## Call as admin    
-    %{stop_prank_callable = start_prank(ids.MINT_ADMIN, ids.contract_address)%}   
+#     ## Call as admin    
+#     %{stop_prank_callable = start_prank(ids.MINT_ADMIN, ids.contract_address)%}   
 
-    ## Transfer even amount as mint owner to TEST_ACC1
-    IERC721.mint(contract_address=contract_address, to = MINT_ADMIN)  
-    IERC721.mint(contract_address=contract_address, to = MINT_ADMIN)  
+#     ## Transfer even amount as mint owner to TEST_ACC1
+#     IERC721.mint(contract_address=contract_address, to = MINT_ADMIN)  
+#     IERC721.mint(contract_address=contract_address, to = MINT_ADMIN)  
     
-    ## Transfer NFT from MINT_ADMIN to TEST_ACC2
-    IERC721.transferFrom(contract_address=contract_address, from_ = MINT_ADMIN, to = TEST_ACC2, tokenId = Uint256(1,0))    
-    %{ stop_prank_callable() %}           
+#     ## Transfer NFT from MINT_ADMIN to TEST_ACC2
+#     IERC721.transferFrom(contract_address=contract_address, from_ = MINT_ADMIN, to = TEST_ACC2, tokenId = Uint256(1,0))    
+#     %{ stop_prank_callable() %}           
         
-    let (ow) = IERC721.ownerOf(contract_address=contract_address, tokenId = Uint256(1,0))    
+#     let (ow) = IERC721.ownerOf(contract_address=contract_address, tokenId = Uint256(1,0))    
 
-    ## Check the OG owner vs current owner of the transfered NFT
-    let (original_owner) = IERC721.getOriginalOwner(contract_address=contract_address, tokenId = Uint256(1,0))    
-    assert_not_equal(original_owner, ow)
+#     ## Check the OG owner vs current owner of the transfered NFT
+#     let (original_owner) = IERC721.getOriginalOwner(contract_address=contract_address, tokenId = Uint256(1,0))    
+#     assert_not_equal(original_owner, ow)
 
-    return()
-end
+#     return()
+# end
 
 @external
 func test_burn_mint{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():   
@@ -107,15 +107,15 @@ func test_burn_mint{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     Erc20.transfer(contract_address=contract_address_erc20, recipient = TEST_ACC2, amount = Uint256(2500,0))          
     %{ stop_prank_callable() %}  
 
-    ## Call mintBuy as non-owner
+    ## Call mintBurn as non-owner
     %{stop_prank_callable = start_prank(ids.TEST_ACC2, ids.contract_address)%}   
-    IERC721.mintBuy(contract_address=contract_address)          
+    IERC721.mintBurn(contract_address=contract_address)          
     %{ stop_prank_callable() %} 
 
     ## Reverts on call as an account without adequete funds
     %{stop_prank_callable = start_prank(ids.TEST_ACC1, ids.contract_address)%}   
     %{ expect_revert() %}
-    IERC721.mintBuy(contract_address=contract_address)          
+    IERC721.mintBurn(contract_address=contract_address)          
     %{ stop_prank_callable() %}     
 
     return()
