@@ -14,7 +14,21 @@ from starkware.cairo.common.math import unsigned_div_rem
 ## 010101010101011 FAIL
 
 func pattern{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(n: felt, idx: felt, exp: felt, broken_chain: felt) -> (true : felt):
-    return(0)
+    let (right_shift_num, remainder) = unsigned_div_rem(n, 2)
+        
+    let (x_and_y) = bitwise_and(n, right_shift_num)
+    if x_and_y == 0:
+        let (x_xor_y) = bitwise_xor(n, right_shift_num)
+        let (result) = bitwise_and(x_xor_y, x_xor_y + 1)
+
+        if result == 0:
+            return(1)
+        else:
+            return(0)
+        end
+    else:
+        return(0)
+    end
 end
 
 
